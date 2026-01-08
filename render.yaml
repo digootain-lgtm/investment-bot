@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: investment-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python investment_bot.py
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false

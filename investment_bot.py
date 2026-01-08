@@ -12,6 +12,7 @@ import requests
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 import asyncio
+from threading import Thread
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -23,6 +24,23 @@ from telegram.ext import (
     filters,
     ContextTypes
 )
+
+# Flask for Render Web Service requirement
+from flask import Flask
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "🤖 Investment Bot is running!"
+
+@app.route('/health')
+def health():
+    return {"status": "ok"}
+
+def run_flask():
+    """在背景執行 Flask"""
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
 
 # 設定日誌
 logging.basicConfig(
@@ -758,8 +776,13 @@ async def signal_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     """主程式"""
-    # Bot Token (已更新)
-    TOKEN = "8312585582:AAFW5y82NQCKqbMARMikeuN04DiM3earuBA"
+    # 從環境變數讀取 Token（Railway 會自動設定）
+    TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+    
+    # 如果環境變數沒有設定，使用預設值（本地測試用）
+    if not TOKEN:
+        TOKEN = "8312585582:AAFW5y82NQCKqbMARMikeuN04DiM3earuBA"
+        print("⚠️ 使用本地 Token，如果在 Railway 上請設定環境變數")
     
     if not TOKEN:
         print("=" * 50)
@@ -801,6 +824,12 @@ def main():
     print("🤖 機器人已啟動！")
     print("📱 請到 Telegram 搜尋您的機器人並開始使用")
     print("💡 按 Ctrl+C 可以停止機器人")
+    
+    # 在背景啟動 Flask (for Render Web Service)
+    flask_thread = Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+    print("🌐 Flask 網頁伺服器已啟動")
+    
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
