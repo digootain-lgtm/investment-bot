@@ -790,15 +790,10 @@ def main():
         print("=" * 50)
         return
     
-    # 建立應用程式 (修正版)
-    try:
-        application = Application.builder().token(TOKEN).build()
-    except AttributeError:
-        # 如果是舊版本的 python-telegram-bot
-        from telegram.ext import Updater
-        print("⚠️ 偵測到舊版 python-telegram-bot，請升級")
-        print("請執行: pip install --upgrade python-telegram-bot")
-        return
+    # 建立應用程式
+    print("📦 正在初始化 Telegram Bot...")
+    application = Application.builder().token(TOKEN).build()
+    print("✅ Application 建立成功")
     
     # 第一階段對話處理器
     phase1_conv = ConversationHandler(
